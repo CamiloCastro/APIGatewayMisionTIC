@@ -6,6 +6,7 @@ import json
 from waitress import serve
 import requests
 import datetime
+import re
 
 from flask_jwt_extended import create_access_token, verify_jwt_in_request
 from flask_jwt_extended import JWTManager
@@ -21,6 +22,47 @@ jwt = JWTManager(app)
 def load_file_config():
   with open("config.json") as f:
     return json.load(f)
+
+@app.before_request
+def before_request_callback():
+  url = limpiar_url(request.path)
+  excluded_routes = ["/login"]
+  if url in excluded_routes:
+    print("Ruta excluida del middleware", url)
+  else:
+    if verify_jwt_in_request():
+      usuario = get_jwt_identity()
+      rol = usuario["rol"]
+      if rol is not None:
+        if not validar_permiso(url, request.method.upper(), rol["_id"]):
+          return jsonify({"message": "Permission denied"}), 401
+      else:
+        return jsonify({"message": "Permission denied"}), 401
+    else:
+      return jsonify({"message" : "Permission denied"}), 401
+
+def limpiar_url(url):
+  partes = url.split("/")
+
+  for p in partes:
+    if re.search("\\d", p):
+      url = url.replace(p, "?")
+
+  return url
+
+
+def validar_permiso(url, metodo, id_rol):
+
+  config_data = load_file_config()
+  url_seguridad = config_data["url-backend-security"] + "/permisos-roles/validar-permiso/rol/" + id_rol
+  headers = {"Content-Type": "application/json; charset=utf-8"}
+  body = {
+    "url" : url,
+    "metodo" : metodo
+  }
+  response = requests.post(url_seguridad, headers=headers, json=body)
+  return response.status_code == 200
+
 
 @app.route("/login", methods=["POST"])
 def create_token():
@@ -38,11 +80,21 @@ def create_token():
   else:
     return jsonify({"msg" : "Usuario o contraseña incorrecta"}), 401
 
+#Servicios para ESTUDIANTE
+@app.route("/estudiante", methods=["GET"])
+def listar_estudiantes():
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/estudiante"
+  response = requests.get(url)
+  return jsonify(response.json())
 
-@app.route("/", methods=["GET"])
-def test():
-  data = {"message": "Servidor del API Gateway corriendo"}
-  return jsonify(data)
+#Servicios para MATERIAS
+@app.route("/materias", methods=["GET"])
+def listar_materias():
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/materias"
+  response = requests.get(url)
+  return jsonify(response.json())
 
 if __name__ == '__main__' :
   data_config = load_file_config()
