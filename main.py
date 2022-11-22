@@ -27,7 +27,7 @@ def load_file_config():
 def before_request_callback():
   url = limpiar_url(request.path)
   excluded_routes = ["/login"]
-  if url in excluded_routes:
+  if url in excluded_routes or request.method.upper() == "OPTIONS":
     print("Ruta excluida del middleware", url)
   else:
     if verify_jwt_in_request():
@@ -86,6 +86,20 @@ def listar_estudiantes():
   config_data = load_file_config()
   url = config_data["url-backend-academic"] + "/estudiante"
   response = requests.get(url)
+  return jsonify(response.json())
+
+@app.route("/estudiante/<string:id>", methods=["DELETE"])
+def eliminar_estudiante(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/estudiante/" + id
+  response = requests.delete(url)
+  return jsonify(response.json())
+
+@app.route("/estudiante", methods=["POST"])
+def crear_estudiantes():
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/estudiante"
+  response = requests.post(url, json=request.get_json())
   return jsonify(response.json())
 
 #Servicios para MATERIAS
