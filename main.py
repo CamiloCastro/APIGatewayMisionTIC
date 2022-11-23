@@ -102,12 +102,48 @@ def crear_estudiantes():
   response = requests.post(url, json=request.get_json())
   return jsonify(response.json())
 
+@app.route("/estudiante/<string:id>", methods=["PUT"])
+def actualizar_estudiante(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/estudiante/" + id
+  response = requests.put(url, json=request.get_json())
+  return jsonify(response.json())
+
 #Servicios para MATERIAS
 @app.route("/materias", methods=["GET"])
 def listar_materias():
   config_data = load_file_config()
   url = config_data["url-backend-academic"] + "/materias"
   response = requests.get(url)
+  return jsonify(response.json())
+
+#Servicios para DEPARTAMENTO
+@app.route("/departamento", methods=["GET"])
+def listar_departamentos():
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/departamentos"
+  response = requests.get(url)
+  return jsonify(response.json())
+
+@app.route("/departamento/<string:id>", methods=["DELETE"])
+def eliminar_departamento(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/departamento/" + id
+  response = requests.delete(url)
+  return jsonify(response.json())
+
+@app.route("/departamento", methods=["POST"])
+def crear_departamento():
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/departamento"
+  response = requests.post(url, json=request.get_json())
+  return jsonify(response.json())
+
+@app.route("/departamento/<string:id>", methods=["PUT"])
+def actualizar_departamento(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/departamento/" + id
+  response = requests.put(url, json=request.get_json())
   return jsonify(response.json())
 
 if __name__ == '__main__' :
