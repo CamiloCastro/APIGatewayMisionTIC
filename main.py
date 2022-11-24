@@ -117,6 +117,27 @@ def listar_materias():
   response = requests.get(url)
   return jsonify(response.json())
 
+@app.route("/materia/<string:id>", methods=["DELETE"])
+def eliminar_materia(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/materia/" + id
+  response = requests.delete(url)
+  return jsonify(response.json())
+
+@app.route("/materia", methods=["POST"])
+def crear_materia():
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/materia"
+  response = requests.post(url, json=request.get_json())
+  return jsonify(response.json())
+
+@app.route("/materia/<string:id>", methods=["PUT"])
+def actualizar_materia(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/materia/" + id
+  response = requests.put(url, json=request.get_json())
+  return jsonify(response.json())
+
 #Servicios para DEPARTAMENTO
 @app.route("/departamento", methods=["GET"])
 def listar_departamentos():
