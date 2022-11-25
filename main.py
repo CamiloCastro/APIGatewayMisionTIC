@@ -35,6 +35,9 @@ def before_request_callback():
       rol = usuario["rol"]
       if rol is not None:
         if not validar_permiso(url, request.method.upper(), rol["_id"]):
+          print(request.method.upper())
+          print(rol["_id"])
+          print(url)
           return jsonify({"message": "Permission denied"}), 401
       else:
         return jsonify({"message": "Permission denied"}), 401
@@ -81,6 +84,13 @@ def create_token():
     return jsonify({"msg" : "Usuario o contraseña incorrecta"}), 401
 
 #Servicios para ESTUDIANTE
+@app.route("/estudiante/cedula/<string:cedula>", methods=["GET"])
+def estudiante_cedula(cedula):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/estudiante/cedula/" + cedula
+  response = requests.get(url)
+  return jsonify(response.json())
+
 @app.route("/estudiante", methods=["GET"])
 def listar_estudiantes():
   config_data = load_file_config()
@@ -164,6 +174,43 @@ def crear_departamento():
 def actualizar_departamento(id):
   config_data = load_file_config()
   url = config_data["url-backend-academic"] + "/departamento/" + id
+  response = requests.put(url, json=request.get_json())
+  return jsonify(response.json())
+
+#Servicios de USUARIO
+@app.route("/usuario/<string:id>", methods=["GET"])
+def obtener_usuario(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-security"] + "/usuarios/" + id
+  response = requests.get(url)
+  return jsonify(response.json())
+
+#Servicios de INSCRIPCION
+@app.route("/inscripcion/estudiante/<string:id>", methods=["GET"])
+def listar_inscripciones(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/inscripcion/estudiante/" + id
+  response = requests.get(url)
+  return jsonify(response.json())
+
+@app.route("/inscripcion/<string:id>", methods=["DELETE"])
+def eliminar_inscripcion(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/inscripcion/" + id
+  response = requests.delete(url)
+  return jsonify(response.json())
+
+@app.route("/inscripcion", methods=["POST"])
+def crear_inscripcion():
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/inscripcion"
+  response = requests.post(url, json=request.get_json())
+  return jsonify(response.json())
+
+@app.route("/inscripcion/<string:id>", methods=["PUT"])
+def actualizar_inscripcion(id):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/inscripcion/" + id
   response = requests.put(url, json=request.get_json())
   return jsonify(response.json())
 
