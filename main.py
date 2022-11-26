@@ -35,9 +35,6 @@ def before_request_callback():
       rol = usuario["rol"]
       if rol is not None:
         if not validar_permiso(url, request.method.upper(), rol["_id"]):
-          print(request.method.upper())
-          print(rol["_id"])
-          print(url)
           return jsonify({"message": "Permission denied"}), 401
       else:
         return jsonify({"message": "Permission denied"}), 401
@@ -50,6 +47,12 @@ def limpiar_url(url):
   for p in partes:
     if re.search("\\d", p):
       url = url.replace(p, "?")
+
+  if "/estudiante/cedula" in url:
+    url = "/estudiante/cedula/?"
+
+  if "/materia/nombre" in url:
+    url = "/materia/nombre/?"
 
   return url
 
@@ -124,6 +127,13 @@ def actualizar_estudiante(id):
 def listar_materias():
   config_data = load_file_config()
   url = config_data["url-backend-academic"] + "/materias"
+  response = requests.get(url)
+  return jsonify(response.json())
+
+@app.route("/materia/nombre/<string:nombre>", methods=["GET"])
+def listar_materias_nombre(nombre):
+  config_data = load_file_config()
+  url = config_data["url-backend-academic"] + "/materia/nombre/" + nombre
   response = requests.get(url)
   return jsonify(response.json())
 
